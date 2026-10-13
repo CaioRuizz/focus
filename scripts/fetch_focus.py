@@ -24,8 +24,10 @@ SGS = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados?formato=json&d
 #   IPCA: 13522 (acumulado em 12 meses) em dezembro
 #   Selic: 432 (meta) no último dia do ano
 #   PIB: 7326 (variação real anual, IBGE; o valor mais recente, já com revisões)
-# Câmbio fica de fora: não há uma série do SGS que corresponda com segurança à definição do Focus.
-REALIZED = {"ipca": 13522, "selic": 432, "pib": 7326}
+#   Câmbio: 1 (PTAX de venda), média dos dias úteis de dezembro. É a definição que bate com as respostas do
+#   Focus: na última semana de cada ano a mediana fica a cerca de um centavo dessa média, enquanto a PTAX do
+#   último dia útil chega a diferir em mais de R$ 0,10.
+REALIZED = {"ipca": 13522, "selic": 432, "pib": 7326, "cambio": 1}
 
 # chave do arquivo -> nome do indicador na API
 INDICATORS = {
@@ -76,10 +78,16 @@ def realized(key: str) -> dict[str, float]:
                 raise RuntimeError(f"SGS {code}: {exc}") from exc
             time.sleep(2 ** (attempt + 1))
     out = {}
+    december: dict[str, list[float]] = {}
     for r in rows:
         d, m, y = r["data"].split("/")
-        if key == "pib" or (key == "ipca" and m == "12") or (key == "selic" and (d, m) == ("31", "12")):
+        if key == "cambio":
+            if m == "12":
+                december.setdefault(y, []).append(float(r["valor"]))
+        elif key == "pib" or (key == "ipca" and m == "12") or (key == "selic" and (d, m) == ("31", "12")):
             out[y] = float(r["valor"])
+    for y, values in december.items():
+        out[y] = round(sum(values) / len(values), 4)
     return out
 
 

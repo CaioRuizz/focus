@@ -123,8 +123,8 @@
     if (real != null) parts.push('realizado: ' + fmt(ind, real));
     $('.chart-sub').textContent = parts.join(' · ');
     $('.legend-realized').hidden = real == null;
-    $('.chart-note').textContent = ind === 'cambio' && past
-      ? 'Para o câmbio não mostramos o valor realizado, porque não há uma série do Banco Central equivalente à definição usada no Focus.'
+    $('.chart-note').textContent = ind === 'cambio' && real != null
+      ? 'Realizado do câmbio: média da PTAX de venda nos dias úteis de dezembro, a definição que bate com as respostas do Focus.'
       : '';
 
     var W = Math.max(box.clientWidth, 280), H = W < 520 ? 260 : 320;

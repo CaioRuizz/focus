@@ -7,8 +7,9 @@ Site estático (HTML, CSS e JavaScript, sem build) em `site/`. Os dados vêm de 
 
 - **Expectativas:** API Olinda, recurso `ExpectativasMercadoAnuais`, base de cálculo de 30 dias (a mesma do relatório).
   Um ponto por semana e por ano de referência: o último dia com dado na semana.
-- **Realizado:** séries do SGS 13522 (IPCA em 12 meses, em dezembro), 432 (meta Selic em 31/12) e 7326
-  (variação real do PIB no ano). O câmbio não tem realizado, porque não há série equivalente à definição do Focus.
+- **Realizado:** séries do SGS 13522 (IPCA em 12 meses, em dezembro), 432 (meta Selic em 31/12), 7326
+  (variação real do PIB no ano) e 1 (PTAX de venda, média dos dias úteis de dezembro). Para o câmbio, a média de
+  dezembro é a definição que bate com as respostas do Focus na última semana de cada ano.
 
 ## Rodar localmente
 
