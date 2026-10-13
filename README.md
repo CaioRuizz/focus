@@ -9,7 +9,8 @@ Site estático (HTML, CSS e JavaScript, sem build) em `site/`. Os dados vêm de 
   Um ponto por semana e por ano de referência: o último dia com dado na semana.
 - **Realizado:** séries do SGS 13522 (IPCA em 12 meses, em dezembro), 432 (meta Selic em 31/12), 7326
   (variação real do PIB no ano) e 1 (PTAX de venda, média dos dias úteis de dezembro). Para o câmbio, a média de
-  dezembro é a definição que bate com as respostas do Focus na última semana de cada ano.
+  dezembro é a definição que bate com as respostas do Focus na última semana de cada ano (a seção "Metodologia" do
+  site mostra a comparação ano a ano com a PTAX do último dia útil).
 
 ## Rodar localmente
 

@@ -91,6 +91,18 @@ def realized(key: str) -> dict[str, float]:
     return out
 
 
+def ptax_last_day() -> dict[str, float]:
+    """PTAX de venda do último dia útil de cada ano. Não é o realizado; aparece na metodologia para comparação."""
+    url = SGS.format(code=1, start=FIRST_YEAR, end=date.today().year - 1)
+    with urllib.request.urlopen(url, timeout=60) as resp:
+        rows = json.load(resp)
+    out = {}
+    for r in rows:  # a série vem em ordem cronológica, então o último valor de cada ano fica
+        d, m, y = r["data"].split("/")
+        out[y] = float(r["valor"])
+    return out
+
+
 def weekly(rows: list[dict]) -> dict:
     """Um ponto por semana e por ano de referência: o último dia com dado na semana (em geral a sexta-feira,
     que é a data de referência do relatório publicado na segunda seguinte)."""
@@ -128,6 +140,8 @@ def main() -> None:
         last = max(r["Data"] for r in rows)
         latest.append(last)
         data = {"indicator": name, "updated": updated, "latest": last, "years": years, "realized": realized(key)}
+        if key == "cambio":
+            data["ptax_last_day"] = ptax_last_day()
         (OUT / f"{key}.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
         print(f"{key}: {len(rows)} linhas, {len(years)} anos de referência, último dado {last}", file=sys.stderr)
     (OUT / "meta.json").write_text(json.dumps({"updated": updated, "latest": max(latest)}))

@@ -25,7 +25,10 @@
   <header class="topbar">
     <div class="wrap topbar-inner">
       <a class="brand" href="./">focus<span>.</span></a>
-      <a class="byline" href="https://www.caioruiz.com" rel="author">por Caio Ruiz</a>
+      <nav class="topnav">
+        <a href="#metodologia">Metodologia</a>
+        <a class="byline" href="https://www.caioruiz.com" rel="author">por Caio Ruiz</a>
+      </nav>
     </div>
   </header>
 
@@ -89,15 +92,61 @@
       </div>
     </details>
 
-    <section class="about">
-      <h2>Como ler</h2>
+    <section class="about" id="metodologia">
+      <h2>Metodologia</h2>
+
+      <h3>De onde vêm os dados</h3>
       <ul>
-        <li><strong>Mediana</strong> é o valor do meio entre as projeções enviadas nos últimos 30 dias, a mesma base do relatório semanal.</li>
-        <li>Cada ponto é uma semana: usamos o último dado disponível de cada semana, em geral a sexta-feira que serve de referência para o relatório publicado na segunda.</li>
-        <li><strong>IPCA</strong> é a inflação acumulada no ano; <strong>Selic</strong> é a meta no fim do ano; <strong>PIB</strong> é o crescimento real no ano; <strong>câmbio</strong> é o dólar no fim do ano, medido pela média de dezembro.</li>
-        <li><strong>Realizado</strong> vem do Sistema Gerenciador de Séries do Banco Central: IPCA em 12 meses em dezembro (série 13522), meta Selic em 31 de dezembro (série 432), variação real do PIB no ano (série 7326, com as revisões do IBGE) e média da PTAX de venda nos dias úteis de dezembro (série 1). Para o câmbio usamos a média de dezembro porque é ela que bate com as respostas do Focus na última semana de cada ano, e não a cotação do último dia.</li>
+        <li><strong>Expectativas:</strong> API de Expectativas de Mercado do Banco Central (Olinda), recurso <code>ExpectativasMercadoAnuais</code>, com a base de cálculo de 30 dias: são consideradas as projeções que cada instituição enviou nos últimos 30 dias, a mesma base do relatório publicado toda segunda-feira. Mediana, média, mínimo, máximo e número de respondentes vêm da API, sem nenhum ajuste.</li>
+        <li><strong>Valor realizado:</strong> Sistema Gerenciador de Séries Temporais (SGS) do Banco Central, uma série por indicador (tabela abaixo).</li>
+        <li><strong>Atualização:</strong> os dados são baixados de novo todo dia útil, às 09:17 (horário de Brasília).</li>
       </ul>
-      <p class="source">Fonte: Banco Central do Brasil, API de Expectativas de Mercado (Olinda) e SGS. Os dados são atualizados todo dia útil. Conteúdo informativo, não é recomendação de investimento.</p>
+
+      <h3>Como cada ponto é calculado</h3>
+      <ul>
+        <li><strong>Um ponto por semana:</strong> a API tem dados diários; usamos o último dia com dado em cada semana, em geral a sexta-feira, que é a data de referência do relatório da segunda seguinte.</li>
+        <li><strong>Primeira projeção:</strong> a primeira semana em que aparece expectativa para aquele ano (o Focus pergunta sobre até quatro anos à frente).</li>
+        <li><strong>Início do ano:</strong> a primeira semana do próprio ano de referência (a primeira com data a partir de 1º de janeiro).</li>
+        <li><strong>Variação em 4 semanas:</strong> mediana atual menos a mediana de 28 dias antes.</li>
+        <li><strong>Distância para o realizado:</strong> mediana menos o valor realizado. Positivo: o mercado esperava mais do que aconteceu; negativo, menos. Em pontos percentuais (p.p.) para IPCA, Selic e PIB, e em reais para o câmbio.</li>
+        <li><strong>Quanto o mercado errou no início de cada ano:</strong> a mesma conta, usando a mediana da primeira semana de janeiro.</li>
+      </ul>
+
+      <h3>O que é comparado com o quê</h3>
+      <div class="table-scroll method-table">
+        <table>
+          <thead><tr><th>Indicador</th><th>O que o Focus projeta</th><th>Valor realizado usado</th><th>Série no SGS</th></tr></thead>
+          <tbody>
+            <tr><td>IPCA</td><td>Inflação no ano</td><td>IPCA acumulado em 12 meses, em dezembro</td><td>13522</td></tr>
+            <tr><td>Selic</td><td>Meta da Selic no fim do ano</td><td>Meta Selic em 31 de dezembro</td><td>432</td></tr>
+            <tr><td>PIB</td><td>Crescimento real no ano</td><td>Variação real do PIB no ano, no valor mais recente divulgado pelo IBGE</td><td>7326</td></tr>
+            <tr><td>Câmbio</td><td>Dólar (R$/US$) no fim do ano</td><td>Média da PTAX de venda nos dias úteis de dezembro</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por que a média de dezembro no câmbio</h3>
+      <p>
+        Os próprios dados mostram que a projeção de câmbio de fim de ano se comporta como a média de dezembro, e não como a
+        cotação do último dia útil. Na última semana de cada ano, quando o resultado já está praticamente definido,
+        a mediana do Focus fica, na média, muito mais perto da média de dezembro do que da PTAX do último dia útil (em negrito,
+        a mais próxima em cada ano). Comparar com o último dia mostraria um erro que não é de previsão, e sim de definição.
+      </p>
+      <div class="table-scroll method-table">
+        <table class="fx-check">
+          <thead><tr><th>Ano</th><th>Mediana do Focus na última semana</th><th>Média da PTAX em dezembro</th><th>PTAX do último dia útil</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3>Limites</h3>
+      <ul>
+        <li>O realizado só aparece para anos já encerrados.</li>
+        <li>O PIB é revisado pelo IBGE ao longo dos anos; comparamos com o valor mais recente, não com a primeira divulgação.</li>
+        <li>O número de instituições que respondem muda de semana para semana e aparece no detalhe de cada ponto.</li>
+      </ul>
+
+      <p class="source">Fonte: Banco Central do Brasil, API de Expectativas de Mercado (Olinda) e SGS. Conteúdo informativo, não é recomendação de investimento. Código aberto em <a href="https://github.com/CaioRuizz/focus">github.com/CaioRuizz/focus</a>.</p>
     </section>
   </main>
 

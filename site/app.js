@@ -124,7 +124,7 @@
     $('.chart-sub').textContent = parts.join(' · ');
     $('.legend-realized').hidden = real == null;
     $('.chart-note').textContent = ind === 'cambio' && real != null
-      ? 'Realizado do câmbio: média da PTAX de venda nos dias úteis de dezembro, a definição que bate com as respostas do Focus.'
+      ? 'Realizado do câmbio: média da PTAX de venda nos dias úteis de dezembro, a definição que bate com as projeções do Focus (veja a metodologia).'
       : '';
 
     var W = Math.max(box.clientWidth, 280), H = W < 520 ? 260 : 320;
@@ -417,10 +417,47 @@
     }
   }
 
+  // ---------- metodologia: Focus na última semana do ano × média de dezembro × último dia ----------
+  function renderFxCheck() {
+    var tbody = document.querySelector('.fx-check tbody');
+    load('cambio').then(function (data) {
+      tbody.textContent = '';
+      var gaps = { avg: [], last: [] };
+      Object.keys(data.realized || {}).sort().reverse().forEach(function (y) {
+        var s = data.years[y], last = data.ptax_last_day && data.ptax_last_day[y];
+        if (!s || last == null) return;
+        var i = indexAt(s, y + '-12-31');
+        if (i < 0 || s.d[i].slice(0, 4) !== y) return;
+        var med = s.med[i], avg = data.realized[y];
+        var tr = el('tr');
+        tr.appendChild(el('td', null, y));
+        tr.appendChild(el('td', null, 'R$ ' + num(med, 2)));
+        var avgCell = el('td', null, 'R$ ' + num(avg, 2) + ' (' + fmtDelta('cambio', avg - med).replace('estável', 'menos de R$ 0,01') + ')');
+        var lastCell = el('td', null, 'R$ ' + num(last, 2) + ' (' + fmtDelta('cambio', last - med).replace('estável', 'menos de R$ 0,01') + ')');
+        (Math.abs(avg - med) <= Math.abs(last - med) ? avgCell : lastCell).className = 'closest';
+        tr.appendChild(avgCell);
+        tr.appendChild(lastCell);
+        tbody.appendChild(tr);
+        gaps.avg.push(Math.abs(avg - med));
+        gaps.last.push(Math.abs(last - med));
+      });
+      if (gaps.avg.length) {
+        var mean = function (xs) { return xs.reduce(function (a, b) { return a + b; }, 0) / xs.length; };
+        var tr = el('tr', 'fx-summary');
+        tr.appendChild(el('td', null, 'Distância média'));
+        tr.appendChild(el('td', null, ''));
+        tr.appendChild(el('td', 'closest', 'R$ ' + num(mean(gaps.avg), 3)));
+        tr.appendChild(el('td', null, 'R$ ' + num(mean(gaps.last), 3)));
+        tbody.appendChild(tr);
+      }
+    }).catch(function () {});
+  }
+
   // ---------- estado ----------
   function readHash() {
     var m = location.hash.match(/^#(ipca|selic|pib|cambio)(?:\/(\d{4}))?$/);
     if (m) { state.ind = m[1]; state.year = m[2] ? +m[2] : null; }
+    return !!m;
   }
   function writeHash() {
     history.replaceState(null, '', '#' + state.ind + '/' + state.year);
@@ -456,8 +493,9 @@
     clearTimeout(timer);
     timer = setTimeout(function () { if (cache[state.ind]) { renderChart(cache[state.ind]); renderScore(cache[state.ind]); } }, 150);
   });
-  window.addEventListener('hashchange', function () { readHash(); update(); });
+  window.addEventListener('hashchange', function () { if (readHash()) update(); });
 
   readHash();
   update();
+  renderFxCheck();
 })();
