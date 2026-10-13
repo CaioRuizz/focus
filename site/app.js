@@ -197,6 +197,7 @@
       r.appendChild(el('strong', null, value));
       return r;
     }
+    var gap = null;
     function show(i) {
       current = Math.max(0, Math.min(last, i));
       var x = X(s.d[current]), yv = Y(s.med[current]);
@@ -208,7 +209,9 @@
       tip.appendChild(row('Média', fmt(ind, s.mean[current])));
       tip.appendChild(row('Mín. – máx.', num(s.min[current], 2) + ' – ' + num(s.max[current], 2)));
       tip.appendChild(row('Respondentes', String(s.n[current])));
+      if (real != null) tip.appendChild(row('Distância do realizado', fmtDelta(ind, s.med[current] - real)));
       tip.hidden = false;
+      if (gap) gap.show(current);
       var w = tip.offsetWidth, scale = box.clientWidth / W;
       var left = x * scale + 14;
       if (left + w > box.clientWidth) left = x * scale - w - 14;
@@ -218,6 +221,7 @@
       cross.setAttribute('visibility', 'hidden');
       hdot.setAttribute('visibility', 'hidden');
       tip.hidden = true;
+      if (gap) gap.hide();
     }
     function nearest(clientX) {
       var rect = svg.getBoundingClientRect();
@@ -239,6 +243,163 @@
       if (e.key === 'ArrowRight') { show(current + n); e.preventDefault(); }
     });
 
+    box.appendChild(svg);
+    box.appendChild(tip);
+    gap = renderGap(ind, s, real, W, X, pad, function (i) { show(i); }, hide);
+  }
+
+  // ---------- distância entre a mediana e o realizado (mesmo eixo de tempo do gráfico principal) ----------
+  function renderGap(ind, s, real, W, X, pad, onPick, onLeave) {
+    var wrap = $('.gap'), box = $('.gap-chart');
+    box.textContent = '';
+    wrap.hidden = real == null;
+    if (real == null) return null;
+
+    var diffs = s.med.map(function (v) { return v - real; });
+    var last = diffs.length - 1;
+    var H = 150, top = 12, bottom = 22;
+    var lo = Math.min(0, Math.min.apply(null, diffs)), hi = Math.max(0, Math.max.apply(null, diffs));
+    var step = niceStep(hi - lo || 1, 3);
+    var y0 = Math.floor(lo / step) * step, y1 = Math.ceil(hi / step) * step;
+    if (y1 === y0) y1 = y0 + step;
+    var Y = function (v) { return top + (1 - (v - y0) / (y1 - y0)) * (H - top - bottom); };
+
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img' });
+    svg.setAttribute('aria-label', 'Distância entre a mediana e o valor realizado ao longo do tempo');
+    for (var t = y0; t <= y1 + step / 1e6; t += step) {
+      if (Math.abs(t) < step / 1e6) continue;
+      var yy = Y(t);
+      svg.appendChild(svgEl('line', { x1: pad.l, x2: W - pad.r, y1: yy, y2: yy, class: 'grid' }));
+      svg.appendChild(svgEl('text', { x: pad.l - 8, y: yy + 4, class: 'tick', 'text-anchor': 'end' },
+        (t > 0 ? '+' : '') + num(t, step < 0.1 ? 2 : step < 1 ? 1 : 0)));
+    }
+    var zero = Y(0);
+    var line = '', area = '';
+    diffs.forEach(function (v, i) {
+      var x = X(s.d[i]).toFixed(1), y = Y(v).toFixed(1);
+      line += (i ? 'L' : 'M') + x + ',' + y;
+    });
+    area = line + 'L' + X(s.d[last]).toFixed(1) + ',' + zero.toFixed(1) + 'L' + X(s.d[0]).toFixed(1) + ',' + zero.toFixed(1) + 'Z';
+    svg.appendChild(svgEl('path', { d: area, class: 'gap-area' }));
+    svg.appendChild(svgEl('line', { x1: pad.l, x2: W - pad.r, y1: zero, y2: zero, class: 'real' }));
+    svg.appendChild(svgEl('text', { x: pad.l - 8, y: zero + 4, class: 'tick', 'text-anchor': 'end' }, '0'));
+    svg.appendChild(svgEl('text', { x: W - pad.r + 6, y: zero + 4, class: 'real-label' }, 'realizado'));
+    svg.appendChild(svgEl('path', { d: line, class: 'line' }));
+    var endY = Y(diffs[last]);
+    svg.appendChild(svgEl('circle', { cx: X(s.d[last]), cy: endY, r: 4, class: 'dot' }));
+    if (Math.abs(endY - zero) > 14) {
+      svg.appendChild(svgEl('text', { x: X(s.d[last]) + 8, y: endY + 4, class: 'end-label' }, fmtDelta(ind, diffs[last])));
+    }
+
+    var cross = svgEl('line', { y1: top, y2: H - bottom, class: 'cross', visibility: 'hidden' });
+    var hdot = svgEl('circle', { r: 4, class: 'dot', visibility: 'hidden' });
+    svg.appendChild(cross);
+    svg.appendChild(hdot);
+    function nearest(clientX) {
+      var rect = svg.getBoundingClientRect();
+      var x = (clientX - rect.left) * (W / rect.width), best = 0, dist = Infinity;
+      for (var i = 0; i <= last; i++) {
+        var dx = Math.abs(X(s.d[i]) - x);
+        if (dx < dist) { dist = dx; best = i; }
+      }
+      return best;
+    }
+    svg.addEventListener('pointermove', function (e) { onPick(nearest(e.clientX)); });
+    svg.addEventListener('pointerdown', function (e) { onPick(nearest(e.clientX)); });
+    svg.addEventListener('pointerleave', onLeave);
+    box.appendChild(svg);
+
+    return {
+      show: function (i) {
+        var x = X(s.d[i]);
+        cross.setAttribute('x1', x); cross.setAttribute('x2', x); cross.setAttribute('visibility', 'visible');
+        hdot.setAttribute('cx', x); hdot.setAttribute('cy', Y(diffs[i])); hdot.setAttribute('visibility', 'visible');
+      },
+      hide: function () {
+        cross.setAttribute('visibility', 'hidden');
+        hdot.setAttribute('visibility', 'hidden');
+      },
+    };
+  }
+
+  // ---------- projeção do início do ano × realizado, todos os anos ----------
+  function renderScore(data) {
+    var ind = state.ind, card = $('.score-card'), box = $('.score-chart');
+    box.textContent = '';
+    var rows = [];
+    Object.keys(data.realized || {}).sort().forEach(function (y) {
+      var s = data.years[y];
+      if (!s) return;
+      var i = 0;
+      while (i < s.d.length && s.d[i] < y + '-01-01') i++;
+      if (i >= s.d.length) return;
+      rows.push({ year: y, start: s.med[i], date: s.d[i], real: data.realized[y], diff: s.med[i] - data.realized[y] });
+    });
+    card.hidden = rows.length === 0;
+    if (!rows.length) return;
+
+    var W = Math.max(box.clientWidth, 280), H = 220, pad = { l: 46, r: 10, t: 22, b: 26 };
+    var lo = Math.min(0, Math.min.apply(null, rows.map(function (r) { return r.diff; })));
+    var hi = Math.max(0, Math.max.apply(null, rows.map(function (r) { return r.diff; })));
+    var step = niceStep(hi - lo || 1, 4);
+    var y0 = Math.floor(lo / step) * step, y1 = Math.ceil(hi / step) * step;
+    var Y = function (v) { return pad.t + (1 - (v - y0) / (y1 - y0)) * (H - pad.t - pad.b); };
+    var band = (W - pad.l - pad.r) / rows.length, bw = Math.min(24, band * 0.6);
+
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img' });
+    svg.setAttribute('aria-label', 'Diferença entre a projeção do início de cada ano e o valor realizado');
+    for (var t = y0; t <= y1 + step / 1e6; t += step) {
+      var yy = Y(t);
+      svg.appendChild(svgEl('line', { x1: pad.l, x2: W - pad.r, y1: yy, y2: yy, class: Math.abs(t) < step / 1e6 ? 'real' : 'grid' }));
+      svg.appendChild(svgEl('text', { x: pad.l - 8, y: yy + 4, class: 'tick', 'text-anchor': 'end' },
+        (t > 0 ? '+' : '') + num(t, step < 0.1 ? 2 : step < 1 ? 1 : 0)));
+    }
+    var zero = Y(0), r = 4;
+    var tip = el('div', 'tip');
+    tip.hidden = true;
+    rows.forEach(function (row, k) {
+      var cx = pad.l + band * k + band / 2, x = cx - bw / 2, yv = Y(row.diff);
+      var h = Math.abs(yv - zero), rr = Math.min(r, h);
+      // barra com a ponta arredondada e a base reta, saindo do zero
+      var d = row.diff >= 0
+        ? 'M' + x + ',' + zero + 'V' + (yv + rr) + 'Q' + x + ',' + yv + ' ' + (x + rr) + ',' + yv + 'H' + (x + bw - rr) + 'Q' + (x + bw) + ',' + yv + ' ' + (x + bw) + ',' + (yv + rr) + 'V' + zero + 'Z'
+        : 'M' + x + ',' + zero + 'V' + (yv - rr) + 'Q' + x + ',' + yv + ' ' + (x + rr) + ',' + yv + 'H' + (x + bw - rr) + 'Q' + (x + bw) + ',' + yv + ' ' + (x + bw) + ',' + (yv - rr) + 'V' + zero + 'Z';
+      var g = svgEl('g', { class: 'score-bar' + (+row.year === state.year ? ' is-selected' : ''), tabindex: '0', role: 'button' });
+      g.setAttribute('aria-label', row.year + ': ' + fmtDelta(ind, row.diff));
+      g.appendChild(svgEl('rect', { x: cx - band / 2, y: pad.t, width: band, height: H - pad.t - pad.b, class: 'hit' }));
+      g.appendChild(svgEl('path', { d: d, class: 'bar' }));
+      if (band >= 34) {
+        g.appendChild(svgEl('text', { x: cx, y: row.diff >= 0 ? yv - 6 : yv + 14, class: 'bar-label', 'text-anchor': 'middle' },
+          (row.diff > 0 ? '+' : '') + num(row.diff, IND[ind].currency ? 2 : 1)));
+      }
+      g.appendChild(svgEl('text', { x: cx, y: H - 8, class: 'tick', 'text-anchor': 'middle' }, band >= 34 ? row.year : "'" + row.year.slice(2)));
+      function showTip() {
+        tip.textContent = '';
+        tip.appendChild(el('div', 'tip-date', row.year));
+        var line = function (label, value, main) {
+          var e = el('div', 'tip-row' + (main ? ' tip-main' : ''));
+          e.appendChild(el('span', null, label));
+          e.appendChild(el('strong', null, value));
+          tip.appendChild(e);
+        };
+        line('Diferença', fmtDelta(ind, row.diff), true);
+        line('Mediana no início do ano', fmt(ind, row.start));
+        line('Realizado', fmt(ind, row.real));
+        tip.hidden = false;
+        var scale = box.clientWidth / W, w = tip.offsetWidth;
+        var left = cx * scale + 14;
+        if (left + w > box.clientWidth) left = cx * scale - w - 14;
+        tip.style.left = Math.max(0, left) + 'px';
+      }
+      function pick() { state.year = +row.year; update(); document.querySelector('.chart-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      g.addEventListener('pointerenter', showTip);
+      g.addEventListener('focus', showTip);
+      g.addEventListener('pointerleave', function () { tip.hidden = true; });
+      g.addEventListener('blur', function () { tip.hidden = true; });
+      g.addEventListener('click', pick);
+      g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      svg.appendChild(g);
+    });
     box.appendChild(svg);
     box.appendChild(tip);
   }
@@ -277,6 +438,7 @@
       renderSummary(data);
       renderYears(data);
       renderChart(data);
+      renderScore(data);
       renderTable(data);
       writeHash();
       app.classList.remove('loading');
@@ -292,7 +454,7 @@
   var timer;
   window.addEventListener('resize', function () {
     clearTimeout(timer);
-    timer = setTimeout(function () { if (cache[state.ind]) renderChart(cache[state.ind]); }, 150);
+    timer = setTimeout(function () { if (cache[state.ind]) { renderChart(cache[state.ind]); renderScore(cache[state.ind]); } }, 150);
   });
   window.addEventListener('hashchange', function () { readHash(); update(); });
 

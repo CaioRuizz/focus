@@ -118,6 +118,29 @@ button:focus-visible, .chart svg:focus-visible { outline: 2px solid var(--accent
 .tip-row span { color: var(--muted); }
 .tip-main strong { font-size: 15px; }
 .chart-note { margin: 10px 0 0; font-size: 14px; color: var(--muted); }
+.gap { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
+.gap[hidden], .score-card[hidden] { display: none; }
+.gap-title { font-size: 15px; margin: 0; }
+.gap-sub { margin: 2px 0 6px; font-size: 13px; color: var(--muted); }
+.gap-chart { position: relative; }
+.gap-chart svg, .score-chart svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+.chart .gap-area, .gap-chart .gap-area { fill: var(--chart-band); }
+.gap-chart .grid, .score-chart .grid { stroke: var(--grid); stroke-width: 1; }
+.gap-chart .tick, .score-chart .tick { fill: var(--muted); font: 12px Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.gap-chart .line { fill: none; stroke: var(--chart); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.gap-chart .dot { fill: var(--chart); stroke: var(--surface); stroke-width: 2; }
+.gap-chart .real, .score-chart .real { stroke: var(--real); stroke-width: 1; }
+.gap-chart .real-label { fill: var(--text); font: 600 12px Inter, system-ui, sans-serif; }
+.gap-chart .end-label { fill: var(--text); font: 600 12px Inter, system-ui, sans-serif; }
+.gap-chart .cross { stroke: var(--muted); stroke-width: 1; }
+.score-card { margin-top: 16px; }
+.score-chart { position: relative; margin-top: 12px; }
+.score-chart .hit { fill: transparent; }
+.score-chart .bar { fill: var(--chart); opacity: .45; transition: opacity .15s; }
+.score-chart .score-bar { cursor: pointer; outline: none; }
+.score-chart .score-bar:hover .bar, .score-chart .score-bar:focus .bar, .score-chart .is-selected .bar { opacity: 1; }
+.score-chart .score-bar:focus-visible .hit { stroke: var(--accent); stroke-width: 2; }
+.score-chart .bar-label { fill: var(--text); font: 600 11px Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; }
 .error { color: var(--muted); padding: 40px 0; }
 
 .table-view { margin: 22px 0 0; }
