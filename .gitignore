@@ -1,0 +1,5 @@
+.DS_Store
+__pycache__/
+
+# Gerado no deploy por scripts/fetch_focus.py
+site/data/

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus ao longo do tempo — expectativas do mercado semana a semana</title>
+  <meta name="description" content="Como as expectativas do Relatório Focus para IPCA, Selic, PIB e câmbio mudaram semana a semana, comparadas com o que de fato aconteceu. Dados do Banco Central.">
+  <meta property="og:title" content="Focus ao longo do tempo">
+  <meta property="og:description" content="Como as expectativas do mercado para IPCA, Selic, PIB e câmbio mudaram semana a semana. Dados do Banco Central.">
+  <meta property="og:url" content="https://focus.caioruiz.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:image" content="https://focus.caioruiz.com/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://focus.caioruiz.com/">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./">focus<span>.</span></a>
+      <a class="byline" href="https://www.caioruiz.com" rel="author">por Caio Ruiz</a>
+    </div>
+  </header>
+
+  <main id="app" class="wrap">
+    <section class="hero">
+      <p class="eyebrow">Relatório Focus · Banco Central do Brasil</p>
+      <h1>Focus ao longo do tempo</h1>
+      <p class="lead">
+        Toda semana o Banco Central pergunta a mais de cem instituições o que esperam para a economia.
+        O relatório mostra só a semana atual; aqui você vê como cada expectativa mudou até virar realidade.
+      </p>
+    </section>
+
+    <div class="controls">
+      <div class="segmented" role="tablist" aria-label="Indicador">
+        <button type="button" role="tab" data-ind="ipca" aria-selected="true">IPCA</button>
+        <button type="button" role="tab" data-ind="selic" aria-selected="false">Selic</button>
+        <button type="button" role="tab" data-ind="pib" aria-selected="false">PIB</button>
+        <button type="button" role="tab" data-ind="cambio" aria-selected="false">Câmbio</button>
+      </div>
+      <p class="report-date"></p>
+    </div>
+
+    <section class="summary" aria-live="polite"></section>
+
+    <section class="card chart-card">
+      <div class="chart-head">
+        <div>
+          <h2 class="chart-title"></h2>
+          <p class="chart-sub"></p>
+        </div>
+        <ul class="legend">
+          <li><span class="key key-line"></span>Mediana</li>
+          <li><span class="key key-band"></span>Menor e maior projeção</li>
+          <li class="legend-realized"><span class="key key-real"></span>Realizado</li>
+        </ul>
+      </div>
+      <div class="years" role="group" aria-label="Ano de referência"></div>
+      <div class="chart"></div>
+      <p class="chart-note"></p>
+    </section>
+
+    <details class="table-view">
+      <summary>Ver os dados em tabela</summary>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Semana</th><th>Mediana</th><th>Média</th><th>Mínimo</th><th>Máximo</th><th>Respondentes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
+
+    <section class="about">
+      <h2>Como ler</h2>
+      <ul>
+        <li><strong>Mediana</strong> é o valor do meio entre as projeções enviadas nos últimos 30 dias, a mesma base do relatório semanal.</li>
+        <li>Cada ponto é uma semana: usamos o último dado disponível de cada semana, em geral a sexta-feira que serve de referência para o relatório publicado na segunda.</li>
+        <li><strong>IPCA</strong> é a inflação acumulada no ano; <strong>Selic</strong> é a meta no fim do ano; <strong>PIB</strong> é o crescimento real no ano; <strong>câmbio</strong> é a cotação do dólar no fim do ano.</li>
+        <li><strong>Realizado</strong> vem do Sistema Gerenciador de Séries do Banco Central: IPCA em 12 meses em dezembro (série 13522), meta Selic em 31 de dezembro (série 432) e variação real do PIB no ano (série 7326, com as revisões do IBGE). Para o câmbio não mostramos o realizado, porque não há uma série equivalente à definição usada no Focus.</li>
+      </ul>
+      <p class="source">Fonte: Banco Central do Brasil, API de Expectativas de Mercado (Olinda) e SGS. Os dados são atualizados todo dia útil. Conteúdo informativo, não é recomendação de investimento.</p>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <p>Feito por <a href="https://www.caioruiz.com">Caio Ruiz</a> · <a href="https://github.com/CaioRuizz/focus">código no GitHub</a></p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
