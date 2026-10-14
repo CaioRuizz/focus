@@ -23,11 +23,11 @@ e abra http://localhost:8000.
 
 ## Deploy
 
-GitHub Pages via GitHub Actions (`.github/workflows/deploy.yml`): a cada push na `main` e em dias úteis às 09:17
-(horário de Brasília), o workflow baixa os dados e publica a pasta `site/`. O agendamento fica no Jenkins
-(https://jenkins.caioruiz.com, job `cron-focus`), que dispara o workflow por `workflow_dispatch`; o agendamento do
-GitHub Actions atrasava várias horas. Se a API do Banco Central falhar, o
-deploy falha e o site continua com os dados anteriores.
+O CI/CD roda no Jenkins (http://100.92.14.38:4831, job `github/focus`), definido no `Jenkinsfile`: o Jenkins
+consulta o GitHub a cada 5 minutos e, a cada commit novo na `main`, roda `scripts/fetch_focus.py` num container
+descartável e publica a pasta `site/` na branch `gh-pages` (um commit só, sem histórico). O job `cron-focus` roda o
+mesmo build em dias úteis às 09:17 (horário de Brasília). Se a API do Banco Central falhar, o build falha e o site
+continua com os dados anteriores.
 
-Configuração feita uma vez no GitHub: **Settings → Pages → Source: GitHub Actions** e domínio personalizado
-`focus.caioruiz.com` (com um registro CNAME `focus` → `caioruizz.github.io` no DNS).
+Configuração no GitHub: **Settings → Pages → Source: Deploy from a branch → `gh-pages`**, domínio personalizado
+`focus.caioruiz.com` (vem de `site/CNAME`, com um registro CNAME `focus` → `caioruizz.github.io` no DNS).
