@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus ao longo do tempo — expectativas do mercado semana a semana</title>
+  <meta name="description" content="Como as expectativas do Relatório Focus para IPCA, Selic, PIB e câmbio mudaram semana a semana, comparadas com o que de fato aconteceu. Dados do Banco Central.">
+  <meta property="og:title" content="Focus ao longo do tempo">
+  <meta property="og:description" content="Como as expectativas do mercado para IPCA, Selic, PIB e câmbio mudaram semana a semana. Dados do Banco Central.">
+  <meta property="og:url" content="https://focus.caioruiz.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:image" content="https://focus.caioruiz.com/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://focus.caioruiz.com/">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./">focus<span>.</span></a>
+      <nav class="topnav">
+        <a href="#metodologia">Metodologia</a>
+        <a class="byline" href="https://www.caioruiz.com" rel="author">por Caio Ruiz</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app" class="wrap">
+    <section class="hero">
+      <p class="eyebrow">Relatório Focus · Banco Central do Brasil</p>
+      <h1>Focus ao longo do tempo</h1>
+      <p class="lead">
+        Toda semana o Banco Central pergunta a mais de cem instituições o que esperam para a economia.
+        O relatório mostra só a semana atual; aqui você vê como cada expectativa mudou até virar realidade.
+      </p>
+    </section>
+
+    <div class="controls">
+      <div class="segmented" role="tablist" aria-label="Indicador">
+        <button type="button" role="tab" data-ind="ipca" aria-selected="true">IPCA</button>
+        <button type="button" role="tab" data-ind="selic" aria-selected="false">Selic</button>
+        <button type="button" role="tab" data-ind="pib" aria-selected="false">PIB</button>
+        <button type="button" role="tab" data-ind="cambio" aria-selected="false">Câmbio</button>
+      </div>
+      <p class="report-date"></p>
+    </div>
+
+    <section class="summary" aria-live="polite"></section>
+
+    <section class="card chart-card">
+      <div class="chart-head">
+        <div>
+          <h2 class="chart-title"></h2>
+          <p class="chart-sub"></p>
+        </div>
+        <ul class="legend">
+          <li><span class="key key-line"></span>Mediana</li>
+          <li><span class="key key-band"></span>Menor e maior projeção</li>
+          <li class="legend-realized"><span class="key key-real"></span>Realizado</li>
+        </ul>
+      </div>
+      <div class="years" role="group" aria-label="Ano de referência"></div>
+      <div class="chart"></div>
+      <div class="gap" hidden>
+        <h3 class="gap-title">Distância para o realizado</h3>
+        <p class="gap-sub">Mediana menos o valor realizado. Acima de zero, o mercado esperava mais do que aconteceu; abaixo, menos.</p>
+        <div class="gap-chart"></div>
+      </div>
+      <p class="chart-note"></p>
+    </section>
+
+    <section class="card chart-card score-card" hidden>
+      <h2 class="chart-title">Quanto o mercado errou no início de cada ano</h2>
+      <p class="chart-sub">Mediana da primeira semana de cada ano menos o valor realizado no fim do ano. Toque em um ano para ver a trajetória completa.</p>
+      <div class="score-chart"></div>
+    </section>
+
+    <details class="table-view">
+      <summary>Ver os dados em tabela</summary>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Semana</th><th>Mediana</th><th>Média</th><th>Mínimo</th><th>Máximo</th><th>Respondentes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
+
+    <section class="about" id="metodologia">
+      <h2>Metodologia</h2>
+
+      <h3>De onde vêm os dados</h3>
+      <ul>
+        <li><strong>Expectativas:</strong> API de Expectativas de Mercado do Banco Central (Olinda), recurso <code>ExpectativasMercadoAnuais</code>, com a base de cálculo de 30 dias: são consideradas as projeções que cada instituição enviou nos últimos 30 dias, a mesma base do relatório publicado toda segunda-feira. Mediana, média, mínimo, máximo e número de respondentes vêm da API, sem nenhum ajuste.</li>
+        <li><strong>Valor realizado:</strong> Sistema Gerenciador de Séries Temporais (SGS) do Banco Central, uma série por indicador (tabela abaixo).</li>
+        <li><strong>Atualização:</strong> os dados são baixados de novo todo dia útil, às 09:17 (horário de Brasília).</li>
+      </ul>
+
+      <h3>Como cada ponto é calculado</h3>
+      <ul>
+        <li><strong>Um ponto por semana:</strong> a API tem dados diários; usamos o último dia com dado em cada semana, em geral a sexta-feira, que é a data de referência do relatório da segunda seguinte.</li>
+        <li><strong>Primeira projeção:</strong> a primeira semana em que aparece expectativa para aquele ano (o Focus pergunta sobre até quatro anos à frente).</li>
+        <li><strong>Início do ano:</strong> a primeira semana do próprio ano de referência (a primeira com data a partir de 1º de janeiro).</li>
+        <li><strong>Variação em 4 semanas:</strong> mediana atual menos a mediana de 28 dias antes.</li>
+        <li><strong>Distância para o realizado:</strong> mediana menos o valor realizado. Positivo: o mercado esperava mais do que aconteceu; negativo, menos. Em pontos percentuais (p.p.) para IPCA, Selic e PIB, e em reais para o câmbio.</li>
+        <li><strong>Quanto o mercado errou no início de cada ano:</strong> a mesma conta, usando a mediana da primeira semana de janeiro.</li>
+      </ul>
+
+      <h3>O que é comparado com o quê</h3>
+      <div class="table-scroll method-table">
+        <table>
+          <thead><tr><th>Indicador</th><th>O que o Focus projeta</th><th>Valor realizado usado</th><th>Série no SGS</th></tr></thead>
+          <tbody>
+            <tr><td>IPCA</td><td>Inflação no ano</td><td>IPCA acumulado em 12 meses, em dezembro</td><td>13522</td></tr>
+            <tr><td>Selic</td><td>Meta da Selic no fim do ano</td><td>Meta Selic em 31 de dezembro</td><td>432</td></tr>
+            <tr><td>PIB</td><td>Crescimento real no ano</td><td>Variação real do PIB no ano, no valor mais recente divulgado pelo IBGE</td><td>7326</td></tr>
+            <tr><td>Câmbio</td><td>Dólar (R$/US$) no fim do ano</td><td>Média da PTAX de venda nos dias úteis de dezembro</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por que a média de dezembro no câmbio</h3>
+      <p>
+        Os próprios dados mostram que a projeção de câmbio de fim de ano se comporta como a média de dezembro, e não como a
+        cotação do último dia útil. Na última semana de cada ano, quando o resultado já está praticamente definido,
+        a mediana do Focus fica, na média, muito mais perto da média de dezembro do que da PTAX do último dia útil (em negrito,
+        a mais próxima em cada ano). Comparar com o último dia mostraria um erro que não é de previsão, e sim de definição.
+      </p>
+      <div class="table-scroll method-table">
+        <table class="fx-check">
+          <thead><tr><th>Ano</th><th>Mediana do Focus na última semana</th><th>Média da PTAX em dezembro</th><th>PTAX do último dia útil</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3>Limites</h3>
+      <ul>
+        <li>O realizado só aparece para anos já encerrados.</li>
+        <li>O PIB é revisado pelo IBGE ao longo dos anos; comparamos com o valor mais recente, não com a primeira divulgação.</li>
+        <li>O número de instituições que respondem muda de semana para semana e aparece no detalhe de cada ponto.</li>
+      </ul>
+
+      <p class="source">Fonte: Banco Central do Brasil, API de Expectativas de Mercado (Olinda) e SGS. Conteúdo informativo, não é recomendação de investimento. Código aberto em <a href="https://github.com/CaioRuizz/focus">github.com/CaioRuizz/focus</a>.</p>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <p>Feito por <a href="https://www.caioruiz.com">Caio Ruiz</a> · <a href="https://github.com/CaioRuizz/focus">código no GitHub</a></p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
